@@ -38,7 +38,7 @@
 
 <custom-loader id="custom-loader" class="d-none"></custom-loader>
 
-<section id="matches-container" class="default-padding">
+<section id="matches-container" class="default-padding fade-in">
     @if(Model.Any())
     {
         @Html.Partial("_Carousel", Model)
@@ -65,6 +65,16 @@
             });
         }
 
+        const updateContent = (newContent) => {
+            matchesContainer.classList.remove('fade-in');
+            
+            setTimeout(() => {
+                matchesContainer.innerHTML = newContent;
+                initializeSwipper();
+                matchesContainer.classList.add('fade-in');
+            }, 0);
+        }
+
 
         const fetchData = async (isRecent) => {
             const apiUrl = "@Url.Action("Carousel", "Home")";
@@ -87,12 +97,11 @@
                     matchesContainer.classList.remove('d-none');
                     customLoader.classList.add('d-none');
                     const htmlContent = await response.text();
-                    matchesContainer.innerHTML = htmlContent;
-                    initializeSwipper();
+                    updateContent(htmlContent);
                 } else {
                     matchesContainer.classList.remove('d-none');
                     customLoader.classList.add('d-none');
-                    matchesContainer.innerHTML = '<error-message>Oops, something went wrong, please try again.<error-message>';
+                    updateContent('<error-message>Oops, something went wrong, please try again.<error-message>');
                     console.error("Error", response.status);
                 }
             }

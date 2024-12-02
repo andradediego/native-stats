@@ -20,7 +20,10 @@ following leagues:
 ## Installation
 
 This project does not need download or installation of dependecies. Just clone this repo and open it on Visual Studio.
-    
+
+
+* After launching the application in Visual Studio, navigate to the URL localhost.
+* If accessed from a non-mobile device, you will be redirected to localhost/Home/NotMobile.
 ## Considerations
 
 The external API used in this project supports data retrieval within a 7-day range. Since the desired approach or specific number of days per request was not defined, the following logic was implemented:

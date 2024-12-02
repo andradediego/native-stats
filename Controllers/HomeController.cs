@@ -37,7 +37,7 @@ namespace NativeStats.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> FootballLeagueCarousel(bool isRecent = false)
+        public async Task<IActionResult> Carousel(bool isRecent = false)
         {
             try
             {

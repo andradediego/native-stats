@@ -1,32 +1,56 @@
 using Microsoft.AspNetCore.Mvc;
-using NativeStats.Models;
-using System.Diagnostics;
+using NativeStats.DTO;
+using NativeStats.Middleware;
+using NativeStats.Service;
+
 
 namespace NativeStats.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, IHttpClientFactory httpClientFactory)
         {
             _logger = logger;
+            _httpClientFactory = httpClientFactory;
         }
 
-        public IActionResult Index()
+        [MobileOnly]
+        public async Task<IActionResult> Index()
+        {
+            var service = new ApiService(true, _httpClientFactory);
+            var data = await service.CallFootballServiceAsync();
+            
+            if (!data.Any())
+            {
+                _logger.LogWarning("No data returned for recent matches.");
+            }
+
+            return View(data);
+        }
+
+        public IActionResult NotMobile()
         {
             return View();
         }
 
-        public IActionResult Privacy()
+        [HttpPost]
+        public async Task<IActionResult> FootballLeagueCarousel(bool isRecent = false)
         {
-            return View();
-        }
+            try
+            {
+                var service = new ApiService(isRecent, _httpClientFactory);
+                var data = await service.CallFootballServiceAsync();
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+                return PartialView("_Carousel", data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while fetching data for FootballLeagueCarousel.");
+                return PartialView("_Carousel", new List<MatchesByAreaDTO>());
+            }
         }
     }
 }

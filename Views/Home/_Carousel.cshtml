@@ -1,0 +1,46 @@
+﻿@model IEnumerable<MatchesByAreaDTO>
+
+@functions {
+    public string RenderMatchTeam(string homeTeamName, string homeTeamCrest, string status, int? awayScore)
+    {
+        // Renderiza o HTML como uma string
+        var teamInfo = status == "FINISHED"
+            ? $"{homeTeamName} - {awayScore}"
+            : homeTeamName;
+
+        return $@"
+            <p class='match-team'>
+                <img src='{homeTeamCrest}' alt='{homeTeamName} crest' width='18' />
+                <span>{teamInfo}</span>
+            </p>";
+    }
+
+    public string FormatIsoDate(string isoDate)
+    {
+        if (DateTime.TryParse(isoDate, out DateTime parsedDate))
+        {
+            return parsedDate.ToString("dd/MM/yyyy HH:mm");
+        }
+        return "";
+    }
+}
+
+
+@foreach(var item in Model)
+{
+    <h3 class="my-1">@item.Competition.Name</h3>
+    <custom-container>
+        <div class="swiper footbal-swiper">
+            <div class="swiper-wrapper">
+                @foreach(var match in item.Matches)
+                {
+                    <div tabindex="0" class="swiper-slide">
+                        <p class="match-time pd-1">@FormatIsoDate(match.UtcDate)</p>
+                        @Html.Raw(RenderMatchTeam(match.HomeTeam.Name, match.HomeTeam.Crest, match.Status, match.Score?.FullTime?.Home))
+                        @Html.Raw(RenderMatchTeam(match.AwayTeam.Name, match.AwayTeam.Crest, match.Status, match.Score?.FullTime?.Away))
+                    </div>
+                }
+            </div>
+        </div>
+    </custom-container>
+}

@@ -1,8 +1,120 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿
+
+@model IEnumerable<MatchesByAreaDTO>
+
+@{
+    ViewData["Title"] = "Index";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<section class="default-padding">
+    <custom-container>
+        <div>
+            <h1>Native Stats</h1>
+        </div>
+        <div>
+            <button role="button" tabindex="0" type="button" class="btn">
+                Register
+            </button>
+
+            <button role="button" tabindex="0" class="btn">
+                Login
+            </button>
+        </div>
+    </custom-container>
+</section>
+
+
+<section class="default-padding">
+    <custom-container>
+        <button role="button" tabindex="0" id="recent-matches" type="button" class="btn">
+            Recent matches
+        </button>
+
+        <button role="button" tabindex="0" id="upcoming-matches" type="button" class="btn">
+            Upcoming matches
+        </button>
+    </custom-container>
+</section>
+
+<custom-loader id="custom-loader" class="d-none"></custom-loader>
+
+<section id="matches-container" class="default-padding">
+    @if(Model.Any())
+    {
+        @Html.Partial("_Carousel", Model)
+    }
+    else
+    {
+        <error-message>
+            Oops, something went wrong, please try again.
+        </error-message>
+    }
+</section>
+ 
+@section Scripts {
+    <script>
+        const btnRecentMatches = document.getElementById("recent-matches");
+        const btnUpcomingMatches = document.getElementById("upcoming-matches");
+        const customLoader = document.getElementById("custom-loader");
+        const matchesContainer = document.getElementById("matches-container");
+
+        const initializeSwipper = () => {
+            const swiper = new Swiper(".footbal-swiper", {
+                slidesPerView: "auto",
+                spaceBetween: 30
+            });
+        }
+
+
+        const fetchData = async (isRecent) => {
+            const apiUrl = "@Url.Action("Carousel", "Home")";
+
+            const dataToSend = {
+                isRecent
+            };
+            try {
+                matchesContainer.classList.add('d-none');
+                customLoader.classList.remove('d-none');
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(dataToSend)
+                });
+
+                if (response.ok) {
+                    matchesContainer.classList.remove('d-none');
+                    customLoader.classList.add('d-none');
+                    const htmlContent = await response.text();
+                    matchesContainer.innerHTML = htmlContent;
+                    initializeSwipper();
+                } else {
+                    matchesContainer.classList.remove('d-none');
+                    customLoader.classList.add('d-none');
+                    matchesContainer.innerHTML = '<error-message>Oops, something went wrong, please try again.<error-message>';
+                    console.error("Error", response.status);
+                }
+            }
+            catch (error) {
+                console.error("Error", error);
+            }
+        }
+
+        
+        btnRecentMatches.addEventListener("click", async () => {
+            fetchData(false);
+        });
+
+        btnUpcomingMatches.addEventListener("click", async () => {
+            fetchData(true);
+        });
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+            initializeSwipper();
+        });
+        
+    </script>
+}
+
